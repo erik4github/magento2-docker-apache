@@ -1,0 +1,29 @@
+#!/bin/bash
+source ./.env
+
+[ -z "$1" ] && echo "Please specify a directory or file to copy to container (ex. vendor, --all)" && exit
+
+real_src=$SOURCE_DIR # /c/projects/foo/bar
+src_dir_name=${real_src##*/} # bar
+
+if [ "$1" == "--all" ]; then
+
+  docker cp $real_src/./ $(docker-compose ps -q phpfpm|awk '{print $1}'):/var/www/html/
+
+  if [[ "$OS" == "Windows_NT" ]]; then
+    # docker cp behavior on windows (not within WSL) doesn't behave correctly, contents are never copied *into* the directory
+    # see: https://github.com/moby/moby/issues/34638
+    # temporary workaround until issue is solved, better method devised, or WSL I/O speed improved
+    echo "Windows OS, using rsync to move directory up one level."
+    bin/rootnotty phpfpm rsync -ua --delete-after $src_dir_name/ .
+  fi
+
+  echo "Completed copying all files from host to container."
+
+  bin/fixowns
+  bin/fixperms
+else
+  docker cp $real_src/$1 $(docker-compose ps -q phpfpm|awk '{print $1}'):/var/www/html/ && echo "Completed copying $1 from host to container"
+  bin/fixowns $1
+  bin/fixperms $1
+fi

@@ -1,0 +1,3 @@
+#!/bin/bash
+[ -z "$1" ] && echo "Please specify a directory to check the permissions of." && exit
+bin/cli find "$1" -maxdepth 1 -type d -exec stat -c '%a %n %u %U %g %G' {} +

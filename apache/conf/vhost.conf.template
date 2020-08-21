@@ -1,0 +1,22 @@
+<VirtualHost *:80>
+    ServerName ${APP_HOST}
+    ServerAlias ${APP_HOST}
+    DocumentRoot /var/www/html/pub
+
+    # Allow encoded slashes
+    AllowEncodedSlashes NoDecode
+
+    <Directory /var/www/html/pub>
+        Options +Indexes +Includes +FollowSymLinks +MultiViews
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    <FilesMatch "\.php$">
+        # For Apache version 2.4.10 and above, use SetHandler to run PHP as a fastCGI process server
+        SetHandler "proxy:fcgi://phpfpm:9000"
+    </FilesMatch>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>

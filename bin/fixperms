@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [[ -z "$1" ]]; then
+    docker-compose exec -u app phpfpm find var generated vendor pub/static pub/media app/etc -type f -exec chmod g+w {} + \
+    && echo "File permissions fixed." \
+    && docker-compose exec -u app phpfpm find var generated vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} + \
+    && echo "Directory permissions fixed." \
+    && docker-compose exec -u app phpfpm chmod u+x bin/magento \
+    && echo "Permissions fixed."
+else 
+    docker-compose exec -u app phpfpm find $1 -type f -exec chmod g+ws {} + \
+    && echo "File permissions fixed." \
+    docker-compose exec -u app phpfpm find $1 -type d -exec chmod g+ws {} + \
+    && echo "Directory permissions fixed." \
+    && echo "Permissions for "$1" fixed."
+fi
